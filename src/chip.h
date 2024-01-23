@@ -1,4 +1,7 @@
-struct Chip {
+const int CLOCK_FREQUENCY = 500;
+const float CLOCK_PERIOD = 1.0/CLOCK_FREQUENCY;
+
+typedef struct Chip {
   /// General purpose registers.
   unsigned char regs[16];
 
@@ -19,5 +22,4 @@ struct Chip {
 
   /// Stack counter, can't be used by programs.
   unsigned char _sc;
-};
-
+} Chip;

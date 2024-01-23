@@ -1,9 +1,13 @@
 #include <stdio.h>
 #include <stdbool.h>
+
+#include <SDL2/SDL_events.h>
+#include <SDL2/SDL_keyboard.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_video.h>
 #include <SDL2/SDL_render.h>
-#include "chip.h"
+
+#include "chip.c"
 
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
@@ -44,6 +48,9 @@ int main() {
     return -1;
   }
 
+  SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+
+  Chip chip;
   bool quit = false;
 
   while(!quit) {
@@ -54,13 +61,16 @@ int main() {
         quit = true;
         break;
       }
+
+      if (event.type != SDL_KEYDOWN) {
+        continue;
+      }
+
+      const char* key = SDL_GetKeyName(event.key.keysym.sym);
+      handle_input(&chip, key);
     }
-
-    SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-    SDL_RenderClear(renderer);
-
-    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0x00);
-    SDL_RenderDrawPoint(renderer, 32, 16);
+    
+    advance(&chip);
 
     SDL_RenderPresent(renderer);
   }
