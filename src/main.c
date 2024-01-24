@@ -1,3 +1,4 @@
+#include <SDL2/SDL_timer.h>
 #include <stdio.h>
 #include <stdbool.h>
 
@@ -16,7 +17,7 @@ const int LOGICAL_WIDTH = 64;
 const int LOGICAL_HEIGHT = 32;
 
 int main() {
-  int init_res = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
+  int init_res = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_TIMER);
 
   if(init_res < 0) {
     printf("SDL could not be initialized\n"
@@ -52,10 +53,14 @@ int main() {
 
   Chip chip;
   bool quit = false;
+  Uint64 last_counter = SDL_GetPerformanceCounter();
 
   while(!quit) {
-    SDL_Event event;
+    Uint64 counter = SDL_GetPerformanceCounter();
+    float delta = (counter - last_counter) / (float) SDL_GetPerformanceFrequency();
+    last_counter = counter;
 
+    SDL_Event event;
     while (SDL_PollEvent(&event)) {
       if(event.type == SDL_QUIT) {
         quit = true;
@@ -70,7 +75,7 @@ int main() {
       handle_input(&chip, key);
     }
     
-    advance(&chip);
+    advance(&chip, delta);
 
     SDL_RenderPresent(renderer);
   }

@@ -1,4 +1,5 @@
 #include "chip.h"
+#include <stdio.h>
 
 char map_key(const char* key) {
   switch (*key) {
@@ -23,8 +24,14 @@ char map_key(const char* key) {
   return ' ';
 }
 
-void advance(Chip* chip) {
-  
+void advance(Chip* chip, float delta) {
+  chip->delta_accumulator += delta;
+
+  if (chip->delta_accumulator > CLOCK_PERIOD) {
+    chip->delta_accumulator -= CLOCK_PERIOD;
+
+    // TODO: do things
+  }
 }
 
 void handle_input(Chip* chip, const char* key) {

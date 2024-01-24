@@ -22,4 +22,7 @@ typedef struct Chip {
 
   /// Stack counter, can't be used by programs.
   unsigned char _sc;
+
+  /// Used to accumulate delta times when advancing the emulation.
+  float delta_accumulator;
 } Chip;
