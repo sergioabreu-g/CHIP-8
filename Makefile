@@ -1,2 +1,2 @@
-chip-8: src/main.c
+chip-8: src/*
 	gcc src/main.c -o chip-8 `sdl2-config --cflags --libs`

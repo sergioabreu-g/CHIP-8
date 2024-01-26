@@ -51,7 +51,7 @@ int main() {
 
   SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
-  Chip chip;
+  Chip chip = new_chip();
   bool quit = false;
   Uint64 last_counter = SDL_GetPerformanceCounter();
 
