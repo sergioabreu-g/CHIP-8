@@ -51,6 +51,10 @@ int main() {
 
   SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
+  Environment environment = {
+    renderer
+  };
+
   Chip chip = new_chip();
   bool quit = false;
   Uint64 last_counter = SDL_GetPerformanceCounter();
@@ -75,7 +79,7 @@ int main() {
       handle_input(&chip, key);
     }
     
-    advance(&chip, delta);
+    advance(&chip, &environment, delta);
 
     SDL_RenderPresent(renderer);
   }

@@ -30,11 +30,11 @@ char map_key(const char* key) {
   return ' ';
 }
 
-void execute_instruction(Chip* chip, const Instruction instruction) {
-    (*instruction_functions[instruction >> 12])(chip, instruction);
+void execute_instruction(Chip* chip, Environment* environment, const Instruction instruction) {
+    (*instruction_functions[instruction >> 12])(chip, environment, instruction);
 }
 
-void advance(Chip* chip, float delta) {
+void advance(Chip* chip, Environment *environment, float delta) {
   chip->delta_accumulator += delta;
   chip->delta_accumulator_60hz += delta;
 
@@ -60,7 +60,7 @@ void advance(Chip* chip, float delta) {
       chip->pc = STARTING_ADDRESS;
     }
     
-    execute_instruction(chip, instruction);
+    execute_instruction(chip, environment, instruction);
   }
 }
 
