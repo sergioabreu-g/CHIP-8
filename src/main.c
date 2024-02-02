@@ -8,7 +8,7 @@
 #include <SDL2/SDL_video.h>
 #include <SDL2/SDL_render.h>
 
-#include "chip.c"
+#include "chip.h"
 
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
@@ -71,12 +71,13 @@ int main() {
         break;
       }
 
-      if (event.type != SDL_KEYDOWN) {
-        continue;
+      if (event.type == SDL_KEYDOWN) {
+        const char* key = SDL_GetKeyName(event.key.keysym.sym);
+        handle_input(&chip, key, true);
+      } else if (event.type == SDL_KEYUP) {
+        const char* key = SDL_GetKeyName(event.key.keysym.sym);
+        handle_input(&chip, key, false);
       }
-
-      const char* key = SDL_GetKeyName(event.key.keysym.sym);
-      handle_input(&chip, key);
     }
     
     advance(&chip, &environment, delta);
