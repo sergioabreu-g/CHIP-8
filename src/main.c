@@ -9,14 +9,28 @@
 #include <SDL2/SDL_render.h>
 
 #include "chip.h"
+#include "environment.h"
 
-const int WINDOW_WIDTH = 800;
-const int WINDOW_HEIGHT = 600;
+static const int WINDOW_WIDTH = 800;
+static const int WINDOW_HEIGHT = 600;
 
-const int LOGICAL_WIDTH = 64;
-const int LOGICAL_HEIGHT = 32;
+int main(int argc, char *argv[]) {
+  if (argc < 2) {
+    printf("Please provide a path to a ROM.\n");
+    return -1;
+  }
 
-int main() {
+  char* rom_path = argv[1];
+  FILE *rom_file = fopen(rom_path, "r");
+  if (!rom_file) {
+    printf("Can't open ROM file at path: %s\n", rom_path);
+    return -1;
+  }
+
+  Chip chip = new_chip();
+
+  fread(&chip.memory[STARTING_ADDRESS], sizeof(chip.memory) - STARTING_ADDRESS, 1, rom_file);
+  
   int init_res = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_TIMER);
 
   if(init_res < 0) {
@@ -43,19 +57,19 @@ int main() {
     return -1;
   }
 
-  if (SDL_RenderSetLogicalSize(renderer, LOGICAL_WIDTH, LOGICAL_HEIGHT)) {
+  if (SDL_RenderSetLogicalSize(renderer, RENDER_WIDTH, RENDER_HEIGHT)) {
     printf("failed to set render logical size\n"
            "SDL_Error: %s\n", SDL_GetError());
     return -1;
   }
 
-  SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-
   Environment environment = {
     renderer
   };
 
-  Chip chip = new_chip();
+  clear_screen(&environment);
+  render_screen(&environment);
+
   bool quit = false;
   Uint64 last_counter = SDL_GetPerformanceCounter();
 
@@ -81,8 +95,6 @@ int main() {
     }
     
     advance(&chip, &environment, delta);
-
-    SDL_RenderPresent(renderer);
   }
 
   SDL_DestroyRenderer(renderer);

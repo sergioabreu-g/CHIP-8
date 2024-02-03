@@ -7,9 +7,17 @@ void instruction_0nn(Chip *chip, Environment *environment, const Instruction ins
   switch (instruction) {
     case 0x00E0:
       clear_screen(environment);
+
+      for (int x = 0; x < RENDER_WIDTH; x++) {
+        for (int y = 0; y < RENDER_HEIGHT; y++) {
+          chip->pixels[x][y] = false;
+        }
+      }
+
+      render_screen(environment);
       break;
     case 0x00EE:
-      chip->pc = chip->regs[chip->stack[chip->sc]];
+      chip->pc = chip->stack[chip->sc];
       chip->sc -= 1;
       break;
     default:
@@ -123,14 +131,47 @@ void instruction_Bnnn(Chip *chip, Environment *environment, const Instruction in
 }
 
 void instruction_Cxkk(Chip *chip, Environment *environment, const Instruction instruction) {
-  unsigned char reg_x = instruction >> 8 & 0x000F;
+  unsigned char x = instruction >> 8 & 0x000F;
   unsigned char random = rand() % 256;
 
-  chip->regs[reg_x]= random & (instruction & 0x00FF);
+  chip->regs[x]= random & (instruction & 0x00FF);
 }
 
-void instruction_Dxkn(Chip *chip, Environment *environment, const Instruction instruction) {
-  // todo
+void instruction_Dxyn(Chip *chip, Environment *environment, const Instruction instruction) {
+  unsigned char x = instruction >> 8 & 0x000F;
+  unsigned char y = instruction >> 4 & 0x000F;
+  unsigned char n = instruction & 0x000F;
+
+  unsigned char x_origin = chip->regs[x];
+  unsigned char y_origin = chip->regs[y];
+
+  chip->regs[0xF] = 0;
+
+  for (short sprite_y = 0; sprite_y < n; sprite_y++) {
+    char byte = chip->memory[chip->I_reg + sprite_y];
+
+    for (char sprite_x = 0; sprite_x < 8; sprite_x++) {
+      char bit = 0x80 >> sprite_x;
+
+      if ((byte & bit) != bit) {
+        continue;
+      }
+
+      char screen_x = (x_origin + sprite_x) % RENDER_WIDTH;
+      char screen_y = (y_origin + sprite_y) % RENDER_HEIGHT;
+
+      bool clear = chip->pixels[screen_x][screen_y];
+
+      draw_pixel(environment, screen_x, screen_y, clear);
+      chip->pixels[screen_x][screen_y] = !clear;
+
+      if (clear) {
+        chip->regs[0xF] = 1;
+      }
+    }
+  }
+
+  render_screen(environment);
 }
 
 void instruction_Exnn(Chip *chip, Environment *environment, const Instruction instruction) {
@@ -181,11 +222,18 @@ void instruction_Fxnn(Chip *chip, Environment *environment, const Instruction in
       chip->I_reg = chip->I_reg + chip->regs[x];
       break;
     case 0x29:
-      // todo
+      chip->I_reg = chip->regs[x] * 5;
       break;
-    case 0x33:
-      // todo
+    case 0x33: {
+      char number = chip->regs[x];
+
+      for (short i = 2; i > 0; i++) {
+        chip->memory[chip->I_reg + i] = number % 10;
+        number /= 10;
+      }
+
       break;
+    }
     case 0x55:
       for (char i = 0; i < x; i++) {
         chip->memory[chip->I_reg + i] = chip->regs[i];
@@ -217,7 +265,7 @@ static void (*instruction_functions[16]) (Chip*, Environment*, const Instruction
   [0xA] = instruction_Annn,
   [0xB] = instruction_Bnnn,
   [0xC] = instruction_Cxkk,
-  [0xD] = instruction_Dxkn,
+  [0xD] = instruction_Dxyn,
   [0xE] = instruction_Exnn,
   [0xF] = instruction_Fxnn,
 };
