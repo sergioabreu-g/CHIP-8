@@ -1,9 +1,7 @@
-#include "chip.h"
-#include "environment.h"
 #include <stdio.h>
 #include <stdlib.h>
-
-typedef unsigned short Instruction;
+#include "chip.h"
+#include "environment.h"
 
 void instruction_0nn(Chip *chip, Environment *environment, const Instruction instruction) {
   switch (instruction) {

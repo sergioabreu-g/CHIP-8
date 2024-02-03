@@ -1,8 +1,14 @@
-#include <stdbool.h>
+#ifndef CHIP_H
+#define CHIP_H
 
-const int CLOCK_FREQUENCY = 500;
-const float CLOCK_PERIOD = 1.0/CLOCK_FREQUENCY;
-const short STARTING_ADDRESS = 0x600;
+#include <stdbool.h>
+#include "environment.h"
+
+static const int CLOCK_FREQUENCY = 500;
+static const float CLOCK_PERIOD = 1.0/CLOCK_FREQUENCY;
+static const short STARTING_ADDRESS = 0x600;
+
+typedef unsigned short Instruction;
 
 typedef struct Chip {
   /// General purpose registers.
@@ -45,3 +51,11 @@ typedef struct Chip {
   /// 0x7F means no key was yet pressed.
   char first_key_pressed;
 } Chip;
+
+Chip new_chip();
+char map_key_to_hex(const char* key);
+void execute_instruction(Chip* chip, Environment* environment, const Instruction instruction);
+void advance(Chip* chip, Environment *environment, float delta);
+void handle_input(Chip* chip, const char* key, bool down);
+
+#endif

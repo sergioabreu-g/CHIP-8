@@ -1,3 +1,6 @@
+#ifndef ENVIRONMENT_H
+#define ENVIRONMENT_H
+
 #include <SDL2/SDL_render.h>
 
 // This is an attempt at decoupling everything from the chip logic,
@@ -8,3 +11,5 @@ typedef struct Environment {
 
 void clear_screen(Environment* self);
 void draw_pixel(Environment* self, int x, int y);
+
+#endif

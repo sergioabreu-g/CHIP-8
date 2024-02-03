@@ -1,11 +1,11 @@
-#include "instructions.c"
 #include <stdbool.h>
 #include <stdio.h>
+#include "chip.h"
+#include "environment.h"
+#include "instructions.c"
 
 Chip new_chip() {
-  Chip chip = { .pc = STARTING_ADDRESS };
-  chip.memory[0x601] = 0xE0;
-  chip.first_key_pressed = 0x7F;
+  Chip chip = { .pc = STARTING_ADDRESS, .first_key_pressed = 0x7F };
   return chip;
 }
 
