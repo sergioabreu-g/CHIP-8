@@ -7,7 +7,7 @@
 #define RENDER_WIDTH 64
 #define RENDER_HEIGHT 32
 
-static const int CLOCK_FREQUENCY = 500;
+static const int CLOCK_FREQUENCY = 1000;
 static const float CLOCK_PERIOD = 1.0/CLOCK_FREQUENCY;
 static const short STARTING_ADDRESS = 0x200;
 
@@ -44,6 +44,10 @@ typedef struct Chip {
   /// Used to accumulate delta times to update the 60hz registers.
   float delta_accumulator_60hz;
 
+  /// The time the last instruction should take, based on:
+  /// https://jackson-s.me/2019/07/13/Chip-8-Instruction-Scheduling-and-Frequency.html
+  float last_instruction_time;
+
   /// An array that contains which keys are currently pressed.
   bool keys_pressed[16];
 
@@ -60,7 +64,7 @@ typedef struct Chip {
 
 Chip new_chip();
 char map_key_to_hex(const char* key);
-void execute_instruction(Chip* chip, Environment* environment, const Instruction instruction);
+float execute_instruction(Chip* chip, Environment* environment, const Instruction instruction);
 void advance(Chip* chip, Environment *environment, float delta);
 void handle_input(Chip* chip, const char* key, bool down);
 void setup_memory(Chip* chip);

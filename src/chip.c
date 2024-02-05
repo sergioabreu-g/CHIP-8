@@ -132,9 +132,8 @@ char map_key_to_hex(const char* key) {
   }
 }
 
-void execute_instruction(Chip* chip, Environment* environment, const Instruction instruction) {
-  printf("instruction: %#4x\n", instruction);
-  (*instruction_functions[instruction >> 12])(chip, environment, instruction);
+float execute_instruction(Chip* chip, Environment* environment, const Instruction instruction) {
+  return (*instruction_functions[instruction >> 12])(chip, environment, instruction);
 }
 
 void advance(Chip* chip, Environment *environment, float delta) {
@@ -150,12 +149,11 @@ void advance(Chip* chip, Environment *environment, float delta) {
 
     if (chip->sound_reg > 0) {
       chip->sound_reg -= 1;
-      printf("sound\n");
     }
   }
 
-  while (chip->delta_accumulator > CLOCK_PERIOD) {
-    chip->delta_accumulator -= CLOCK_PERIOD;
+  while (chip->delta_accumulator > chip->last_instruction_time) {
+    chip->delta_accumulator -= chip->last_instruction_time;
 
     const Instruction instruction = ((short) chip->memory[chip->pc] << 8) | chip->memory[chip->pc + 1];
     chip->pc += 2;
@@ -164,7 +162,7 @@ void advance(Chip* chip, Environment *environment, float delta) {
       chip->pc = STARTING_ADDRESS;
     }
     
-    execute_instruction(chip, environment, instruction);
+    chip->last_instruction_time = execute_instruction(chip, environment, instruction);
   }
 }
 

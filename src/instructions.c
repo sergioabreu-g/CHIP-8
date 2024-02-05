@@ -3,7 +3,7 @@
 #include "chip.h"
 #include "environment.h"
 
-void instruction_0nn(Chip *chip, Environment *environment, const Instruction instruction) {
+float instruction_0nn(Chip *chip, Environment *environment, const Instruction instruction) {
   switch (instruction) {
     case 0x00E0:
       clear_screen(environment);
@@ -15,129 +15,153 @@ void instruction_0nn(Chip *chip, Environment *environment, const Instruction ins
       }
 
       render_screen(environment);
-      break;
+
+      return 0.000109;
     case 0x00EE:
       chip->pc = chip->stack[chip->sc];
       chip->sc -= 1;
-      break;
+    
+      return 0.000105;
     default:
       // 0nnn instructions are ignored by modern interpreters
-      break;
+      return 0;
   }
 }
 
-void instruction_1nnn(Chip *chip, Environment *environment, const Instruction instruction) {
+float instruction_1nnn(Chip *chip, Environment *environment, const Instruction instruction) {
   chip->pc = 0x0FFF & instruction;
+
+  return 0.000105;
 }
 
-void instruction_2nnn(Chip *chip, Environment *environment, const Instruction instruction) {
+float instruction_2nnn(Chip *chip, Environment *environment, const Instruction instruction) {
   chip->sc += 1;
   chip->stack[chip->sc] = chip->pc;
   chip->pc = 0x0FFF & instruction;
+
+  return 0.000105;
 }
 
-void instruction_3xkk(Chip *chip, Environment *environment, const Instruction instruction) {
+float instruction_3xkk(Chip *chip, Environment *environment, const Instruction instruction) {
   unsigned char x = instruction >> 8 & 0x000F;
   if (chip->regs[x] == (instruction & 0x00FF)) {
     chip->pc += 2;
   }
+
+  return 0.000055;
 }
 
-void instruction_4xkk(Chip *chip, Environment *environment, const Instruction instruction) {
+float instruction_4xkk(Chip *chip, Environment *environment, const Instruction instruction) {
   unsigned char x = instruction >> 8 & 0x000F;
   if (chip->regs[x] != (instruction & 0x00FF)) {
     chip->pc += 2;
   }
+
+  return 0.000055;
 }
 
-void instruction_5xy0(Chip *chip, Environment *environment, const Instruction instruction) {
+float instruction_5xy0(Chip *chip, Environment *environment, const Instruction instruction) {
   unsigned char x = instruction >> 8 & 0x000F;
   unsigned char y = instruction >> 4 & 0x000F;
 
   if (chip->regs[x] == chip->regs[y]) {
     chip->pc += 2;
+    return 0.000046;
   }
+
+  return 0.000064;
 }
 
-void instruction_6xkk(Chip *chip, Environment *environment, const Instruction instruction) {
+float instruction_6xkk(Chip *chip, Environment *environment, const Instruction instruction) {
   unsigned char x = instruction >> 8 & 0x000F;
   chip->regs[x] = 0x00FF & instruction;
+
+  return 0.000027;
 }
 
-void instruction_7xkk(Chip *chip, Environment *environment, const Instruction instruction) {
+float instruction_7xkk(Chip *chip, Environment *environment, const Instruction instruction) {
   unsigned char x = instruction >> 8 & 0x000F;
   chip->regs[x] = chip->regs[x] + (instruction & 0x00FF);
+
+  return 0.000045;
 }
 
-void instruction_8xyn(Chip *chip, Environment *environment, const Instruction instruction) {
+float instruction_8xyn(Chip *chip, Environment *environment, const Instruction instruction) {
   unsigned char x = instruction >> 8 & 0x000F;
   unsigned char y = instruction >> 4 & 0x000F;
   
   switch (instruction & 0x000F) {
     case 0x0:
       chip->regs[x] = chip->regs[y];
-      break;
+      return 0.000200;
     case 0x1:
       chip->regs[x] = chip->regs[x] | chip->regs[y];
-      break;
+      return 0.000200;
     case 0x2:
       chip->regs[x] = chip->regs[x] & chip->regs[y];
-      break;
+      return 0.000200;
     case 0x3:
       chip->regs[x] = chip->regs[x] ^ chip->regs[y];
-      break;
+      return 0.000200;
     case 0x4: {
       unsigned short sum = (unsigned short) chip->regs[x] + chip->regs[y];
       chip->regs[0xF] = sum > 0x00FF? 1 : 0;
       chip->regs[x] = sum & 0x00FF;
-      break;
+      return 0.000200;
     }
     case 0x5:
       chip->regs[0xF] = chip->regs[x] > chip->regs[y]? 1 : 0;
       chip->regs[x] = chip->regs[x] - chip->regs[y];
-      break;
+      return 0.000200;
     case 0x6:
       chip->regs[0xF] = (chip->regs[x] & 0x1) == 0x1? 1 : 0;
       chip->regs[x] = chip->regs[x] / 2;
-      break;
+      return 0.000200;
     case 0x7:
       chip->regs[0xF] = chip->regs[y] > chip->regs[x]? 1 : 0;
       chip->regs[x] = chip->regs[y] - chip->regs[x];
-      break;
+      return 0.000200;
     case 0xE:
       chip->regs[0xF] = (chip->regs[x] & 0x80) == 0x80? 1 : 0;
       chip->regs[x] = chip->regs[x] * 2;
-      break;
+      return 0.000200;
     default:
-      break;
+      return 0;
   }
 }
 
-void instruction_9xy0(Chip *chip, Environment *environment, const Instruction instruction) {
+float instruction_9xy0(Chip *chip, Environment *environment, const Instruction instruction) {
   unsigned char x = instruction >> 8 & 0x000F;
   unsigned char y = instruction >> 4 & 0x000F;
 
   if (chip->regs[x] != chip->regs[y]) {
     chip->pc += 2;
+    return 0.000064;
   }
+
+  return 0.000082;
 }
 
-void instruction_Annn(Chip *chip, Environment *environment, const Instruction instruction) {
+float instruction_Annn(Chip *chip, Environment *environment, const Instruction instruction) {
   chip->I_reg = instruction & 0x0FFF;
+  return 0.000055;
 }
 
-void instruction_Bnnn(Chip *chip, Environment *environment, const Instruction instruction) {
+float instruction_Bnnn(Chip *chip, Environment *environment, const Instruction instruction) {
   chip->pc = (instruction & 0x0FFF) + chip->regs[0];
+  return 0.000105;
 }
 
-void instruction_Cxkk(Chip *chip, Environment *environment, const Instruction instruction) {
+float instruction_Cxkk(Chip *chip, Environment *environment, const Instruction instruction) {
   unsigned char x = instruction >> 8 & 0x000F;
   unsigned char random = rand() % 256;
 
   chip->regs[x]= random & (instruction & 0x00FF);
+
+  return 0.000164;
 }
 
-void instruction_Dxyn(Chip *chip, Environment *environment, const Instruction instruction) {
+float instruction_Dxyn(Chip *chip, Environment *environment, const Instruction instruction) {
   unsigned char x = instruction >> 8 & 0x000F;
   unsigned char y = instruction >> 4 & 0x000F;
   unsigned char n = instruction & 0x000F;
@@ -172,34 +196,38 @@ void instruction_Dxyn(Chip *chip, Environment *environment, const Instruction in
   }
 
   render_screen(environment);
+
+  return 0.022734;
 }
 
-void instruction_Exnn(Chip *chip, Environment *environment, const Instruction instruction) {
+float instruction_Exnn(Chip *chip, Environment *environment, const Instruction instruction) {
   unsigned char x = instruction >> 8 & 0x000F;
 
   switch (instruction & 0x00FF) {
     case 0x9E:
       if (chip->keys_pressed[chip->regs[x]]) {
         chip->pc += 2;
+        return 0.000064;
       }
-      break;
+      return 0.000082;
     case 0xA1:
       if (!chip->keys_pressed[chip->regs[x]]) {
         chip->pc += 2;
+        return 0.000064;
       }
-      break;
+      return 0.000082;
     default:
-      break;
+      return 0;
   }
 }
 
-void instruction_Fxnn(Chip *chip, Environment *environment, const Instruction instruction) {
+float instruction_Fxnn(Chip *chip, Environment *environment, const Instruction instruction) {
   unsigned char x = instruction >> 8 & 0x000F;
 
   switch (instruction & 0x00FF) {
     case 0x07:
       chip->regs[x] = chip->delay_reg;
-      break;
+      return 0.000045;
     case 0x0A:
       if (!chip->waiting_for_key_press || chip->first_key_pressed == 0x7F) {
         chip->waiting_for_key_press = true;
@@ -211,47 +239,49 @@ void instruction_Fxnn(Chip *chip, Environment *environment, const Instruction in
         chip->waiting_for_key_press = false;
         chip->first_key_pressed = 0x7F;
       }
-      break;
+
+      // This should be 0 but that would freeze the application due to architecture limitations.
+      return 0.000100;
     case 0x15:
       chip->delay_reg = chip->regs[x];
-      break;
+      return 0.000045;
     case 0x18:
       chip->sound_reg = chip->regs[x];
-      break;
+      return 0.000045;
     case 0x1E:
       chip->I_reg = chip->I_reg + chip->regs[x];
-      break;
+      return 0.000086;
     case 0x29:
       chip->I_reg = chip->regs[x] * 5;
-      break;
+      return 0.000091;
     case 0x33: {
-      char number = chip->regs[x];
+      unsigned char number = chip->regs[x];
 
-      for (short i = 2; i > 0; i++) {
+      for (short i = 2; i >= 0; i--) {
         chip->memory[chip->I_reg + i] = number % 10;
         number /= 10;
       }
 
-      break;
+      return 0.000927;
     }
     case 0x55:
-      for (char i = 0; i < x; i++) {
+      for (char i = 0; i <= x; i++) {
         chip->memory[chip->I_reg + i] = chip->regs[i];
       }
-      break;
+      return 0.000064 + x * 0.000064;
     case 0x65:
-      for (char i = 0; i < x; i++) {
+      for (char i = 0; i <= x; i++) {
         chip->regs[i] = chip->memory[chip->I_reg + i];
       }
-      break;
+      return 0.000064 + x * 0.000064;
     default:
-      break;
+      return 0;
   }
 }
 
 // This is better than doing a switch with all of the instructions at once,
 // though not by that much xD.
-static void (*instruction_functions[16]) (Chip*, Environment*, const Instruction) = {
+static float (*instruction_functions[16]) (Chip*, Environment*, const Instruction) = {
   [0x0] = instruction_0nn,
   [0x1] = instruction_1nnn,
   [0x2] = instruction_2nnn,
